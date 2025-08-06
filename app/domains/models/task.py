@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import datetime
 from enum import Enum
 
 from pydantic import BaseModel, Field
@@ -17,9 +17,9 @@ class TaskResponse(BaseModel):
     description: str | None = Field(None)
     status: TaskStatus = Field(TaskStatus.PENDING)
     assigned_to: str | None = Field(None)
-    due_date: date | None = Field(None)
-    created_at: str = Field(...)
-    updated_at: str | None = Field(None)
+    due_date: datetime | None = Field(None)
+    created_at: datetime = Field(...)
+    updated_at: datetime | None = Field(None)
 
 
 class CreateTaskRequest(BaseModel):
@@ -27,7 +27,7 @@ class CreateTaskRequest(BaseModel):
     description: str | None = Field(None)
     status: TaskStatus = Field(TaskStatus.PENDING)
     assigned_to: str | None = Field(None)
-    due_date: date | None = Field(None)
+    due_date: datetime | None = Field(None)
 
 
 class PutTaskRequest(BaseModel):
@@ -36,7 +36,7 @@ class PutTaskRequest(BaseModel):
     description: str = Field(...)
     status: TaskStatus = Field(...)
     assigned_to: str = Field(...)
-    due_date: date = Field(...)
+    due_date: datetime = Field(...)
 
 
 class PatchTaskRequest(BaseModel):
@@ -44,4 +44,4 @@ class PatchTaskRequest(BaseModel):
     description: str | None = Field(None)
     status: TaskStatus | None = Field(None)
     assigned_to: str | None = Field(None)
-    due_date: date | None = Field(None)
+    due_date: datetime | None = Field(None)
