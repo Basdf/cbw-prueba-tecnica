@@ -1,8 +1,6 @@
-version: "3.2"
-
 services:
-  business-rules-engine:
-    image: business-rules-engine
+  cbw-api:
+    image: cbw-api
     build:
       context: ..
       dockerfile: docker/Dockerfile
