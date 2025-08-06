@@ -1,0 +1,23 @@
+version: "3.2"
+
+services:
+  business-rules-engine:
+    image: business-rules-engine
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    command: uvicorn app.main:app --workers 1 --host 0.0.0.0 --port 8001 --reload
+    ports:
+      - 8001:8001
+      - 10007:10007
+    environment:
+      - TITLE=CBW Prueba Técnica
+      - DESCRIPTION=API para la gestión de tareas
+      - VERSION=1.0.0
+      - ENVIRONMENT=dev
+      - DEBUGGER=True
+    networks:
+      - CBW
+
+networks:
+  CBW:
