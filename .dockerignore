@@ -1,0 +1,7 @@
+**
+
+!app/*
+!storage/*
+!pyproject.toml
+!uv.lock
+!tests/*

@@ -1,0 +1,82 @@
+[project]
+name = "cbw-prueba-tecnica"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi",
+    "celery",
+    "uvicorn[standard]",
+    "httpx",
+    "pymongo",
+    "pydantic-settings",
+]
+[dependency-groups]
+dev = [
+    "black",
+    "debugpy",
+    "locust",
+    "pre-commit",
+    "pytest",
+    "pytest-asyncio",
+    "pytest-cov",
+    "pytest-mock",
+    "httpx",
+]
+[[tool.uv.index]]
+name = "pypi"
+url = "https://pypi.org/simple"
+[tool.ruff]
+exclude = ["whitelist.py"]
+
+[tool.ruff.lint]
+extend-select = ["UP", "I"]
+exclude = ["UP027"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.pytest.ini_options]
+addopts = ["--ignore=tests/load_test.py", "-p no:warnings"]
+asyncio_default_fixture_loop_scope = "function"
+asyncio_mode = "auto"
+log_cli = true
+log_cli_level = "INFO"
+
+
+[tool.mypy]
+disable_error_code = "func-returns-value"
+namespace_packages = true
+ignore_missing_imports = true
+warn_unreachable = true
+
+[[tool.mypy.overrides]]
+module = "whitelist"
+ignore_errors = true
+
+[tool.vulture]
+exclude = [".venv/"]
+ignore_decorators = [
+    "@router.*",
+    "@app.*",
+    "@*validator*",
+    "@rule_action*",
+    "@rule_variable*",
+    "@numeric_rule_variable*",
+    "@string_rule_variable*",
+    "@text_select_multiple_rule_variable*",
+    "@boolean_rule_variable*",
+    "@numeric_select_multiple_rule_variable*",
+    "@type_operator*",
+    "@field_validator",
+    "@model_validator",
+]
+min_confidence = 60
+paths = ["."]
+sort_by_size = true
+verbose = false
