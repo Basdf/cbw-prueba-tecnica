@@ -25,7 +25,7 @@ class TaskResponse(BaseModel):
 class CreateTaskRequest(BaseModel):
     title: str = Field(...)
     description: str | None = Field(None)
-    status = TaskStatus = Field(TaskStatus.PENDING)
+    status: TaskStatus = Field(TaskStatus.PENDING)
     assigned_to: str | None = Field(None)
     due_date: date | None = Field(None)
 
