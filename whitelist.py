@@ -1,0 +1,6 @@
+ENVIRONMENT  # unused variable (app\config\config.py:8)
+IN_PROGRESS  # unused variable (app\domains\models\task.py:9)
+COMPLETED  # unused variable (app\domains\models\task.py:10)
+CANCELLED  # unused variable (app\domains\models\task.py:11)
+created_at  # unused variable (app\domains\models\task.py:21)
+updated_at  # unused variable (app\domains\models\task.py:22)
