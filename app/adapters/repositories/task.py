@@ -1,10 +1,11 @@
-from datetime import datetime
+from pymongo.asynchronous.collection import AsyncCollection
 
 from app.config.logging import get_logging
+from app.config.mongo import MongoDBConfig
 from app.domains.models.task import (
-    CreateTaskRequest,
-    PatchTaskRequest,
-    PutTaskRequest,
+    CreateTask,
+    PatchTask,
+    PutTask,
     TaskResponse,
     TaskStatus,
 )
@@ -14,71 +15,44 @@ log = get_logging(__name__)
 
 
 class TaskMongoRepository(TaskRepository):
+    mongo_db: MongoDBConfig
+    collection: AsyncCollection
+
+    def __init__(self, mongo_db: MongoDBConfig):
+        self.mongo_db = mongo_db
+        self.collection = self.mongo_db.get_collection("tasks")
+
     async def get_all(self) -> list[TaskResponse]:
-        return []
+        cursor = self.collection.find({})
+        return [TaskResponse(**task) async for task in cursor]
 
     async def get_by_id(self, id: str) -> TaskResponse:
-        return TaskResponse(
-            id=id,
-            title="Sample Task",
-            description="This is a sample task description.",
-            status=TaskStatus.PENDING,
-            assigned_to=None,
-            due_date=None,
-            created_at=datetime.now().isoformat(),
-            updated_at=None,
-        )
+        return await self.collection.find_one({"_id": id})
 
     async def get_by_status(self, status: TaskStatus) -> list[TaskResponse]:
-        return [
-            TaskResponse(
-                id="1",
-                title="Sample Task",
-                description="This is a sample task description.",
-                status=status,
-                assigned_to=None,
-                due_date=None,
-                created_at=datetime.now().isoformat(),
-                updated_at=None,
-            )
-        ]
+        cursor = self.collection.find({"status": status})
+        return [TaskResponse(**task) async for task in cursor]
 
-    async def create(self, new_task: CreateTaskRequest) -> TaskResponse:
-        return TaskResponse(
-            id="new_task_id",
-            title=new_task.title,
-            description=new_task.description,
-            status=new_task.status,
-            assigned_to=new_task.assigned_to,
-            due_date=new_task.due_date,
-            created_at=datetime.now().isoformat(),
-            updated_at=None,
-        )
+    async def create(self, new_task: CreateTask) -> TaskResponse:
+        task_insert_response = await self.collection.insert_one(new_task.model_dump())
+        return await self.get_by_id(task_insert_response.inserted_id)
 
-    async def update(self, id: str, put_task: PutTaskRequest) -> TaskResponse:
-        return TaskResponse(
-            id=id,
-            title=put_task.title,
-            description=put_task.description,
-            status=put_task.status,
-            assigned_to=put_task.assigned_to,
-            due_date=put_task.due_date,
-            created_at=datetime.now().isoformat(),
-            updated_at=datetime.now().isoformat(),
+    async def update(self, id: str, put_task: PutTask) -> TaskResponse:
+        put_task_json = put_task.model_dump()
+        await self.collection.update_one(
+            {"_id": id},
+            {"$set": put_task_json},
         )
+        return await self.get_by_id(id)
 
-    async def patch(self, id: str, patch_task: PatchTaskRequest) -> TaskResponse:
-        return TaskResponse(
-            id=id,
-            title=patch_task.title or "Updated Task",
-            description=patch_task.description or "Updated Description",
-            status=patch_task.status or TaskStatus.PENDING,
-            assigned_to=patch_task.assigned_to,
-            due_date=patch_task.due_date,
-            created_at=datetime.now().isoformat(),
-            updated_at=datetime.now().isoformat(),
+    async def patch(self, id: str, patch_task: PatchTask) -> TaskResponse:
+        patch_task_json = patch_task.model_dump(exclude_none=True)
+        await self.collection.update_one(
+            {"_id": id},
+            {"$set": patch_task_json},
         )
+        return await self.get_by_id(id)
 
     async def delete(self, id: str) -> None:
-        log.info(f"Task with id {id} deleted successfully.")
+        await self.collection.delete_one({"_id": id})
         return None

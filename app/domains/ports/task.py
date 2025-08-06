@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 
 from app.domains.models.task import (
-    CreateTaskRequest,
-    PatchTaskRequest,
-    PutTaskRequest,
+    CreateTask,
+    PatchTask,
+    PutTask,
     TaskResponse,
     TaskStatus,
 )
@@ -23,15 +23,15 @@ class TaskRepository(ABC):
         pass
 
     @abstractmethod
-    async def create(self, new_task: CreateTaskRequest) -> TaskResponse:
+    async def create(self, new_task: CreateTask) -> TaskResponse:
         pass
 
     @abstractmethod
-    async def update(self, id: str, put_task: PutTaskRequest) -> TaskResponse:
+    async def update(self, id: str, put_task: PutTask) -> TaskResponse:
         pass
 
     @abstractmethod
-    async def patch(self, id: str, patch_task: PatchTaskRequest) -> TaskResponse:
+    async def patch(self, id: str, patch_task: PatchTask) -> TaskResponse:
         pass
 
     @abstractmethod

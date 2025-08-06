@@ -11,6 +11,8 @@ dependencies = [
     "httpx",
     "pymongo",
     "pydantic-settings",
+    "pydantic[mongo]>=2.11.7",
+    "pydantic-extra-types>=2.10.5",
 ]
 [dependency-groups]
 dev = [

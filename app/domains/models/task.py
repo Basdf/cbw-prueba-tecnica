@@ -1,7 +1,12 @@
 from datetime import datetime
 from enum import Enum
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
+from pydantic_extra_types.mongo_object_id import MongoObjectId
+
+
+class TaskConfig(BaseModel):
+    model_config: ConfigDict = ConfigDict(validate_by_alias=True, validate_by_name=True)
 
 
 class TaskStatus(str, Enum):
@@ -11,8 +16,8 @@ class TaskStatus(str, Enum):
     CANCELLED = "cancelled"
 
 
-class TaskResponse(BaseModel):
-    id: str = Field(...)
+class TaskResponse(TaskConfig):
+    id: MongoObjectId = Field(..., alias="_id")
     title: str = Field(...)
     description: str | None = Field(None)
     status: TaskStatus = Field(TaskStatus.PENDING)
@@ -22,7 +27,7 @@ class TaskResponse(BaseModel):
     updated_at: datetime | None = Field(None)
 
 
-class CreateTaskRequest(BaseModel):
+class CreateTaskRequest(TaskConfig):
     title: str = Field(...)
     description: str | None = Field(None)
     status: TaskStatus = Field(TaskStatus.PENDING)
@@ -30,8 +35,17 @@ class CreateTaskRequest(BaseModel):
     due_date: datetime | None = Field(None)
 
 
-class PutTaskRequest(BaseModel):
-    id: str = Field(...)
+class CreateTask(TaskConfig):
+    title: str = Field(...)
+    description: str | None = Field(None)
+    status: TaskStatus = Field(TaskStatus.PENDING)
+    assigned_to: str | None = Field(None)
+    due_date: datetime | None = Field(None)
+    created_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime | None = Field(None)
+
+
+class PutTaskRequest(TaskConfig):
     title: str = Field(...)
     description: str = Field(...)
     status: TaskStatus = Field(...)
@@ -39,9 +53,27 @@ class PutTaskRequest(BaseModel):
     due_date: datetime = Field(...)
 
 
-class PatchTaskRequest(BaseModel):
+class PutTask(TaskConfig):
+    title: str = Field(...)
+    description: str = Field(...)
+    status: TaskStatus = Field(...)
+    assigned_to: str = Field(...)
+    due_date: datetime = Field(...)
+    updated_at: datetime = Field(default_factory=datetime.now)
+
+
+class PatchTaskRequest(TaskConfig):
     title: str | None = Field(None)
     description: str | None = Field(None)
     status: TaskStatus | None = Field(None)
     assigned_to: str | None = Field(None)
     due_date: datetime | None = Field(None)
+
+
+class PatchTask(TaskConfig):
+    title: str | None = Field(None)
+    description: str | None = Field(None)
+    status: TaskStatus | None = Field(None)
+    assigned_to: str | None = Field(None)
+    due_date: datetime | None = Field(None)
+    updated_at: datetime = Field(default_factory=datetime.now)
