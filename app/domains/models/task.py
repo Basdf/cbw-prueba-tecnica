@@ -60,7 +60,7 @@ class PatchTaskRequest(TaskConfig):
 class TaskFilterRequest(TaskConfig):
     title: str | None = Field(None)
     description: str | None = Field(None)
-    status: TaskStatus | None = Field(None)
+    status: list[TaskStatus] | None = Field(None)
     assigned_to: str | None = Field(None)
     due_date_init_date: date | None = Field(None)
     due_date_end_date: date | None = Field(None)
