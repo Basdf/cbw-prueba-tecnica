@@ -1,9 +1,6 @@
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query, Request
 from pydantic_extra_types.mongo_object_id import MongoObjectId
 
-from app.adapters.repositories.mongo.task import TaskMongoRepository
-from app.adapters.repositories.workers.task import TaskCeleryWorker
-from app.configs.mongo import mongo_db
 from app.domains.models.task import (
     CreateTaskRequest,
     PatchTaskRequest,
@@ -16,7 +13,10 @@ from app.domains.models.task import (
 from app.domains.services.task import TaskService
 
 router = APIRouter()
-task_service = TaskService(TaskMongoRepository(mongo_db=mongo_db), TaskCeleryWorker())
+
+
+def get_task_service(request: Request) -> TaskService:
+    return request.app.state.task_service
 
 
 @router.get(
@@ -25,7 +25,10 @@ task_service = TaskService(TaskMongoRepository(mongo_db=mongo_db), TaskCeleryWor
     status_code=200,
     response_model_by_alias=False,
 )
-async def get_all(payload: TaskFilterRequest = Query(...)):
+async def get_all(
+    payload: TaskFilterRequest = Query(...),
+    task_service: TaskService = Depends(get_task_service),
+):
     return await task_service.get_all_tasks(payload)
 
 
@@ -35,7 +38,9 @@ async def get_all(payload: TaskFilterRequest = Query(...)):
     status_code=200,
     response_model_by_alias=False,
 )
-async def get_by_id(id: MongoObjectId):
+async def get_by_id(
+    id: MongoObjectId, task_service: TaskService = Depends(get_task_service)
+):
     return await task_service.get_task_by_id(id)
 
 
@@ -45,42 +50,61 @@ async def get_by_id(id: MongoObjectId):
     status_code=200,
     response_model_by_alias=False,
 )
-async def get_by_status(status: TaskStatus):
+async def get_by_status(
+    status: TaskStatus, task_service: TaskService = Depends(get_task_service)
+):
     return await task_service.get_tasks_by_status(status)
 
 
 @router.post(
     "", response_model=TaskResponse, status_code=201, response_model_by_alias=False
 )
-async def create(new_task: CreateTaskRequest):
+async def create(
+    new_task: CreateTaskRequest, task_service: TaskService = Depends(get_task_service)
+):
     return await task_service.create_task(new_task)
 
 
 @router.put(
     "/{id}", response_model=TaskResponse, status_code=200, response_model_by_alias=False
 )
-async def update(id: MongoObjectId, put_task: PutTaskRequest):
+async def update(
+    id: MongoObjectId,
+    put_task: PutTaskRequest,
+    task_service: TaskService = Depends(get_task_service),
+):
     return await task_service.update_task(id, put_task)
 
 
 @router.patch(
     "/{id}", response_model=TaskResponse, status_code=200, response_model_by_alias=False
 )
-async def patch(id: MongoObjectId, patch_task: PatchTaskRequest):
+async def patch(
+    id: MongoObjectId,
+    patch_task: PatchTaskRequest,
+    task_service: TaskService = Depends(get_task_service),
+):
     return await task_service.patch_task(id, patch_task)
 
 
 @router.delete("/{id}", status_code=204)
-async def delete(id: MongoObjectId):
+async def delete(
+    id: MongoObjectId, task_service: TaskService = Depends(get_task_service)
+):
     await task_service.delete_task(id)
     return None
 
 
 @router.post("/report", response_model=str, status_code=202)
-async def report(task_report: TaskReportRequest):
+async def report(
+    task_report: TaskReportRequest,
+    task_service: TaskService = Depends(get_task_service),
+):
     return task_service.report_task(task_report)
 
 
 @router.get("/review/{id}", response_model=str, status_code=202)
-async def review(id: MongoObjectId):
+async def review(
+    id: MongoObjectId, task_service: TaskService = Depends(get_task_service)
+):
     return task_service.review_task_status(id)
