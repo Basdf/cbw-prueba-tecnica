@@ -38,7 +38,7 @@ class TaskMongoRepository(TaskRepository):
         return [TaskResponse(**task) async for task in cursor]
 
     async def get_by_id(self, id: MongoObjectId) -> TaskResponse:
-        return await self.collection.find_one({"_id": id})
+        return TaskResponse(**await self.collection.find_one({"_id": id}))
 
     async def get_by_status(self, status: TaskStatus) -> list[TaskResponse]:
         cursor = self.collection.find({"status": status})
