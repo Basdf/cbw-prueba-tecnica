@@ -14,27 +14,65 @@ Este proyecto es una API desarrollada en Python siguiendo la arquitectura hexago
 - Uvicorn
 - Docker & Docker Compose
 
-## Estructura del proyecto
 
+## Estructura del proyecto
 
 ```
 app/
   adapters/
-    controllers/   # Controladores de la API
-    repositories/  # Implementaciones de repositorios
-    routes/        # Definición de rutas
-  config/          # Configuración y utilidades
+    controllers/      # Controladores de la API
+    repositories/
+      mongo/          # Repositorios para MongoDB
+      workers/        # Repositorios para workers
+    routes/           # Definición de rutas
+  configs/
+    celery.py         # Configuración de Celery
+    debugger.py       # Configuración de depuración
+    logging.py        # Configuración de logging
+    mongo.py          # Configuración de MongoDB
+    settings.py       # Configuración general
   domains/
-    models/        # Modelos de dominio
-    ports/         # Interfaces (puertos)
-    services/      # Servicios de dominio
-  main.py          # Punto de entrada de la aplicación
+    models/           # Modelos de dominio
+    ports/            # Interfaces (puertos)
+    services/         # Servicios de dominio
+  workers/
+    notify_due_task.py    # Worker para notificar tareas próximas a vencer
+    report.py              # Worker para generar reportes de tareas
+    review_task_status.py  # Worker para revisar el estado de tareas
+  main.py              # Punto de entrada de la aplicación
 docker/
-  Dockerfile
+  Dockerfile.api
+  Dockerfile.worker
   Docker-compose.dev.yml
 README.md
 pyproject.toml
+uv.lock
+whitelist.py
 ```
+
+## Endpoints expuestos
+
+Todos los endpoints están bajo el prefijo `/api/tasks`:
+
+- `GET /api/tasks` — Obtiene todas las tareas, permite filtrar por título, descripción, estado, asignado, y rangos de fechas.
+- `GET /api/tasks/{id}` — Obtiene una tarea por su ID.
+- `GET /api/tasks/status/{status}` — Obtiene todas las tareas por estado (`pending`, `in_progress`, `completed`, `cancelled`).
+- `POST /api/tasks` — Crea una nueva tarea.
+- `PUT /api/tasks/{id}` — Actualiza completamente una tarea existente.
+- `PATCH /api/tasks/{id}` — Actualiza parcialmente una tarea.
+- `DELETE /api/tasks/{id}` — Elimina una tarea por su ID.
+- `POST /api/tasks/report` — Genera un reporte de tareas según filtros de estado, asignado y rango de fechas.
+- `GET /api/tasks/review/{id}` — Revisa el estado de una tarea específica y devuelve el resultado.
+
+## Workers habilitados
+
+El proyecto cuenta con 3 workers principales gestionados por Celery:
+
+- **notify_due_task.py**: Notifica a los usuarios sobre tareas próximas a vencer. Se ejecuta periódicamente y busca tareas con fecha de vencimiento cercana.
+- **report.py**: Genera reportes de tareas según los filtros definidos.
+- **review_task_status.py**: Revisa el estado de las tareas.
+
+Cada worker está configurado en su propio archivo dentro de `app/workers/` y se ejecuta como tarea asíncrona mediante Celery.
 
 ## Pasos para correr el proyecto en local con Docker Compose
 
@@ -49,11 +87,15 @@ pyproject.toml
    docker compose -f docker/docker-compose.dev.yml up --build
    ```
 
+
 3. Accede a la API en [http://localhost:8001](http://localhost:8001)
 
-   - El puerto 8001 es el expuesto por el servicio cbw-api.
-   - El puerto 27017 es el expuesto por MongoDB.
-   - El puerto 10007 está disponible para depuración remota.
+  - El puerto 8001 es el expuesto por el servicio cbw-api.
+  - El puerto 27017 es el expuesto por MongoDB.
+  - El puerto 10007 está disponible para depuración remota.
+
+  Puedes consultar la documentación interactiva (Swagger UI) en:
+  [http://localhost:8001/docs](http://localhost:8001/docs)
 
    Si deseas levantar un servicio específico, puedes usar:
    ```sh
@@ -62,7 +104,6 @@ pyproject.toml
    Por ejemplo:
    ```sh
    docker compose -f docker/docker-compose.dev.yml up cbw-api
-   docker compose -f docker/docker-compose.dev.yml up cbw-worker-beat
    docker compose -f docker/docker-compose.dev.yml up cbw-worker-report
    docker compose -f docker/docker-compose.dev.yml up cbw-worker-notify-due-tasks
    docker compose -f docker/docker-compose.dev.yml up cbw-worker-review-task-status
@@ -78,10 +119,4 @@ pyproject.toml
    - Inicia el contenedor normalmente y luego selecciona "Python Debugger: Remote Attach" en el menú de ejecución de VS Code.
    - Esto te permitirá depurar la aplicación mientras se ejecuta dentro del contenedor Docker.
 
-## Notas
-
-- El proyecto incluye configuración para desarrollo y pruebas.
-- Puedes modificar los servicios en `docker-compose.yml` según tus necesidades.
-
 ---
-Para dudas o soporte, contacta al equipo de CBW.
