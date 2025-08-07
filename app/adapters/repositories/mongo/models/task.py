@@ -1,4 +1,4 @@
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 from typing import TypeVar
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -67,14 +67,20 @@ class TaskFilter(BaseModel):
         if due_date_init_date or due_date_end_date:
             self.due_date = DateTimeRange(
                 start=due_date_init_date,
-                end=due_date_end_date + timedelta(days=1, seconds=-1)
+                end=datetime.combine(
+                    due_date_end_date,
+                    datetime.max.time(),
+                )
                 if due_date_end_date
                 else None,
             )
         if created_at_init_date or created_at_end_date:
             self.created_at = DateTimeRange(
                 start=created_at_init_date,
-                end=created_at_end_date + timedelta(days=1, seconds=-1)
+                end=datetime.combine(
+                    created_at_end_date,
+                    datetime.max.time(),
+                )
                 if created_at_end_date
                 else None,
             )
