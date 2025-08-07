@@ -1,3 +1,5 @@
+version: '3.9'
+
 services:
   cbw-api:
     image: cbw-api
@@ -7,124 +9,51 @@ services:
     command: uvicorn app.main:app --workers 1 --host 0.0.0.0 --port 8001 --reload
     develop:
       watch:
-        # Sync the working directory with the `/app` directory in the container
         - action: sync
           path: ..
           target: /usr/src/app
-          # Exclude the project virtual environment
           ignore:
               - .venv/
-
-        # Rebuild the image on changes to the `pyproject.toml`
         - action: rebuild
           path: ..
           target: pyproject.toml
     ports:
       - 8001:8001
       - 10007:10007
-    environment:
-      - TITLE=CBW Prueba Técnica
-      - DESCRIPTION=API para la gestión de tareas
-      - VERSION=1.0.0
-      - ENVIRONMENT=dev
-      - DEBUGGER=True
-      - MONGO_URI=mongodb://cbw:cbw@cbw-mongo:27017
-      - MONGO_DB_NAME=cbw_db
-      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
+    env_file:
+      - ../.env
     networks:
       - CBW
     depends_on:
-      - cbw-mongo
+      cbw-mongo:
+        condition: service_healthy
   cbw-worker-report:
+    <<: *worker-base
     image: cbw-worker-report
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile.worker
     command: celery -A app.workers.report worker -Q report_queue --loglevel=info
-    develop:
-      watch:
-        # Sync the working directory with the `/app` directory in the container
-        - action: sync
-          path: ..
-          target: /usr/src/app
-          # Exclude the project virtual environment
-          ignore:
-              - .venv/
-
-        # Rebuild the image on changes to the `pyproject.toml`
-        - action: rebuild
-          path: ..
-          target: pyproject.toml
-    environment:
-      - MONGO_URI=mongodb://cbw:cbw@cbw-mongo:27017
-      - MONGO_DB_NAME=cbw_db
-      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
-      - CELERY_RESULT_BACKEND=rpc://guest:guest@rabbitmq:5672//
-    networks:
-      - CBW
     depends_on:
-      - cbw-mongo
-      - rabbitmq
+      cbw-mongo:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
   cbw-worker-notify-due-tasks:
+    <<: *worker-base
     image: cbw-worker-notify-due-tasks
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile.worker
     command: celery -A app.workers.notify_due_task worker -B -Q notify_queue --loglevel=info
-    develop:
-      watch:
-        # Sync the working directory with the `/app` directory in the container
-        - action: sync
-          path: ..
-          target: /usr/src/app
-          # Exclude the project virtual environment
-          ignore:
-              - .venv/
-
-        # Rebuild the image on changes to the `pyproject.toml`
-        - action: rebuild
-          path: ..
-          target: pyproject.toml
-    environment:
-      - MONGO_URI=mongodb://cbw:cbw@cbw-mongo:27017
-      - MONGO_DB_NAME=cbw_db
-      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
-      - CELERY_RESULT_BACKEND=rpc://guest:guest@rabbitmq:5672//
-    networks:
-      - CBW
     depends_on:
-      - cbw-mongo
-      - rabbitmq
+      cbw-mongo:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
   cbw-worker-review-task-status:
+    <<: *worker-base
     image: cbw-worker-review-task-status
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile.worker
     command: celery -A app.workers.review_task_status worker -Q review_queue --loglevel=info
-    develop:
-      watch:
-        # Sync the working directory with the `/app` directory in the container
-        - action: sync
-          path: ..
-          target: /usr/src/app
-          # Exclude the project virtual environment
-          ignore:
-              - .venv/
-
-        # Rebuild the image on changes to the `pyproject.toml`
-        - action: rebuild
-          path: ..
-          target: pyproject.toml
-    environment:
-      - MONGO_URI=mongodb://cbw:cbw@cbw-mongo:27017
-      - MONGO_DB_NAME=cbw_db
-      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
-      - CELERY_RESULT_BACKEND=rpc://guest:guest@rabbitmq:5672//
-    networks:
-      - CBW
     depends_on:
-      - cbw-mongo
-      - rabbitmq
+      cbw-mongo:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
   cbw-mongo:
     image: mongo:latest
     container_name: cbw-mongo
@@ -138,6 +67,11 @@ services:
       - cbw-mongo-data:/data/db
     networks:
       CBW:
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.runCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
   rabbitmq:
     image: rabbitmq:3-management
     ports:
@@ -145,9 +79,37 @@ services:
       - 15672:15672
     networks:
       - CBW
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+
+x-worker-base: &worker-base
+  build:
+    context: ..
+    dockerfile: docker/Dockerfile.worker
+  develop:
+    watch:
+      - action: sync
+        path: ..
+        target: /usr/src/app
+        ignore:
+            - .venv/
+      - action: rebuild
+        path: ..
+        target: pyproject.toml
+  env_file:
+    - ../.env
+  networks:
+    - CBW
 
 networks:
   CBW:
 
 volumes:
   cbw-mongo-data:
+  rabbitmq-data:

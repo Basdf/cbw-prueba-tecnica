@@ -151,7 +151,7 @@ async def report(
     return task_service.report_task(task_report)
 
 
-@router.get(
+@router.post(
     "/review/{id}",
     response_model=AsyncTaskResponse,
     status_code=202,
