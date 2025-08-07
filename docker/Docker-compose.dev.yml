@@ -35,26 +35,12 @@ services:
       - CBW
     depends_on:
       - cbw-mongo
-  cbw-worker-beat:
-    image: cbw-worker-beat
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile.worker
-    command: celery beat --loglevel=info
-    environment:
-      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
-      - CELERY_RESULT_BACKEND=rpc://guest:guest@rabbitmq:5672//
-    networks:
-      - CBW
-    depends_on:
-      - cbw-mongo
-      - rabbitmq
   cbw-worker-report:
     image: cbw-worker-report
     build:
       context: ..
       dockerfile: docker/Dockerfile.worker
-    command: celery -A app.workers.report worker -Q report_queue --loglevel=info -c 1
+    command: celery -A app.workers.report worker -Q report_queue --loglevel=info
     environment:
       - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
       - CELERY_RESULT_BACKEND=rpc://guest:guest@rabbitmq:5672//
@@ -68,8 +54,10 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile.worker
-    command: celery -A app.workers.notify_due_task worker -Q notify_queue --loglevel=info -c 1
+    command: celery -A app.workers.notify_due_task worker -B -Q notify_queue --loglevel=info 
     environment:
+      - MONGO_URI=mongodb://cbw:cbw@cbw-mongo:27017
+      - MONGO_DB_NAME=cbw_db
       - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
       - CELERY_RESULT_BACKEND=rpc://guest:guest@rabbitmq:5672//
     networks:
@@ -82,7 +70,7 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile.worker
-    command: celery -A app.workers.review_task_status worker -Q review_queue --loglevel=info -c 1
+    command: celery -A app.workers.review_task_status worker -Q review_queue --loglevel=info
     environment:
       - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
       - CELERY_RESULT_BACKEND=rpc://guest:guest@rabbitmq:5672//
