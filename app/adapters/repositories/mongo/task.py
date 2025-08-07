@@ -7,6 +7,7 @@ from app.domains.models.task import (
     CreateTask,
     PatchTask,
     PutTask,
+    TaskFilter,
     TaskResponse,
     TaskStatus,
 )
@@ -23,8 +24,10 @@ class TaskMongoRepository(TaskRepository):
         self.mongo_db = mongo_db
         self.collection = self.mongo_db.get_collection("tasks")
 
-    async def get_all(self) -> list[TaskResponse]:
-        cursor = self.collection.find({})
+    async def get_all(self, payload: TaskFilter) -> list[TaskResponse]:
+        cursor = self.collection.find(
+            payload.model_dump(exclude_none=True, by_alias=True)
+        )
         return [TaskResponse(**task) async for task in cursor]
 
     async def get_by_id(self, id: MongoObjectId) -> TaskResponse:

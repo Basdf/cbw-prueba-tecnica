@@ -6,6 +6,7 @@ from app.domains.models.task import (
     CreateTask,
     PatchTask,
     PutTask,
+    TaskFilter,
     TaskReport,
     TaskResponse,
     TaskStatus,
@@ -14,7 +15,7 @@ from app.domains.models.task import (
 
 class TaskRepository(ABC):
     @abstractmethod
-    async def get_all(self) -> list[TaskResponse]:
+    async def get_all(self, payload: TaskFilter) -> list[TaskResponse]:
         pass
 
     @abstractmethod

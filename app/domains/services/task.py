@@ -7,6 +7,8 @@ from app.domains.models.task import (
     PatchTaskRequest,
     PutTask,
     PutTaskRequest,
+    TaskFilter,
+    TaskFilterRequest,
     TaskReport,
     TaskReportRequest,
     TaskResponse,
@@ -20,8 +22,8 @@ class TaskService:
         self.repository = repository
         self.worker = worker
 
-    async def get_all_tasks(self) -> list[TaskResponse]:
-        return await self.repository.get_all()
+    async def get_all_tasks(self, payload: TaskFilterRequest) -> list[TaskResponse]:
+        return await self.repository.get_all(TaskFilter(**payload.model_dump()))
 
     async def get_task_by_id(self, id: MongoObjectId) -> TaskResponse:
         return await self.repository.get_by_id(id)

@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 from pydantic_extra_types.mongo_object_id import MongoObjectId
 
 from app.adapters.repositories.mongo.task import TaskMongoRepository
@@ -8,6 +8,7 @@ from app.domains.models.task import (
     CreateTaskRequest,
     PatchTaskRequest,
     PutTaskRequest,
+    TaskFilterRequest,
     TaskReportRequest,
     TaskResponse,
     TaskStatus,
@@ -24,8 +25,8 @@ task_service = TaskService(TaskMongoRepository(mongo_db=mongo_db), TaskCeleryWor
     status_code=200,
     response_model_by_alias=False,
 )
-async def get_all():
-    return await task_service.get_all_tasks()
+async def get_all(payload: TaskFilterRequest = Query(...)):
+    return await task_service.get_all_tasks(payload)
 
 
 @router.get(

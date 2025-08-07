@@ -55,6 +55,21 @@ pyproject.toml
    - El puerto 27017 es el expuesto por MongoDB.
    - El puerto 10007 está disponible para depuración remota.
 
+   Si deseas levantar un servicio específico, puedes usar:
+   ```sh
+   docker compose -f docker/docker-compose.dev.yml up <servicio>
+   ```
+   Por ejemplo:
+   ```sh
+   docker compose -f docker/docker-compose.dev.yml up cbw-api
+   docker compose -f docker/docker-compose.dev.yml up cbw-worker-beat
+   docker compose -f docker/docker-compose.dev.yml up cbw-worker-report
+   docker compose -f docker/docker-compose.dev.yml up cbw-worker-notify-due-tasks
+   docker compose -f docker/docker-compose.dev.yml up cbw-worker-review-task-status
+   docker compose -f docker/docker-compose.dev.yml up cbw-mongo
+   docker compose -f docker/docker-compose.dev.yml up rabbitmq
+   ```
+
 4. Modo Debug (opcional):
 
    Para utilizar el modo debug en VS Code:
