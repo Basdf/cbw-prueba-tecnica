@@ -71,5 +71,9 @@ class TaskFilterRequest(TaskConfig):
 class TaskReportRequest(TaskConfig):
     status: list[TaskStatus] | None = Field(None)
     assigned_to: str | None = Field(None)
-    init_date: datetime = Field(...)
-    end_date: datetime = Field(...)
+    init_date: date = Field(...)
+    end_date: date = Field(...)
+
+
+class AsyncTaskResponse(TaskConfig):
+    task_id: str = Field(...)

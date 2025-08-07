@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Depends, Query, Request
 from pydantic_extra_types.mongo_object_id import MongoObjectId
 
+from app.configs.logging import get_logging
 from app.domains.models.task import (
+    AsyncTaskResponse,
     CreateTaskRequest,
     PatchTaskRequest,
     PutTaskRequest,
@@ -11,6 +13,8 @@ from app.domains.models.task import (
     TaskStatus,
 )
 from app.domains.services.task import TaskService
+
+log = get_logging(__name__)
 
 router = APIRouter()
 
@@ -95,7 +99,7 @@ async def delete(
     return None
 
 
-@router.post("/report", response_model=str, status_code=202)
+@router.post("/report", response_model=AsyncTaskResponse, status_code=202)
 async def report(
     task_report: TaskReportRequest,
     task_service: TaskService = Depends(get_task_service),
@@ -103,7 +107,7 @@ async def report(
     return task_service.report_task(task_report)
 
 
-@router.get("/review/{id}", response_model=str, status_code=202)
+@router.get("/review/{id}", response_model=AsyncTaskResponse, status_code=202)
 async def review(
     id: MongoObjectId, task_service: TaskService = Depends(get_task_service)
 ):

@@ -1,6 +1,8 @@
 from pydantic_extra_types.mongo_object_id import MongoObjectId
 
+from app.configs.logging import get_logging
 from app.domains.models.task import (
+    AsyncTaskResponse,
     CreateTaskRequest,
     PatchTaskRequest,
     PutTaskRequest,
@@ -10,6 +12,8 @@ from app.domains.models.task import (
     TaskStatus,
 )
 from app.domains.ports.task import TaskRepository, TaskWorker
+
+log = get_logging(__name__)
 
 
 class TaskService:
@@ -42,8 +46,8 @@ class TaskService:
     async def delete_task(self, id: MongoObjectId) -> None:
         await self.repository.delete(id)
 
-    def report_task(self, payload: TaskReportRequest) -> str:
+    def report_task(self, payload: TaskReportRequest) -> AsyncTaskResponse:
         return self.worker.report(payload)
 
-    def review_task_status(self, id: MongoObjectId) -> str:
+    def review_task_status(self, id: MongoObjectId) -> AsyncTaskResponse:
         return self.worker.review_task_status(id)
