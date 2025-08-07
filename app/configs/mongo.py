@@ -9,5 +9,5 @@ class MongoDBConfig:
     def get_collection(self, collection_name: str):
         return self.db.get_collection(collection_name)
 
-    def close_connection(self):
-        self.client.close()
+    async def close_connection(self):
+        await self.client.close()

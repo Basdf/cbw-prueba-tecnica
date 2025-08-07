@@ -29,7 +29,7 @@ def report(payload: TaskReportRequest) -> None:
             log.info(
                 f"Task ID: {task.id}, Status: {task.status}, Assigned To: {task.assigned_to}"
             )
-        mongo_db.close_connection()
+        await mongo_db.close_connection()
 
     log.info("Starting report task")
     asyncio.run(run())

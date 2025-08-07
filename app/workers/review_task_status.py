@@ -23,11 +23,14 @@ def review_task_status(id: str) -> None:
         task_repo = TaskMongoRepository(mongo_db=mongo_db)
         object_id = MongoObjectId.validate(id)
         task = await task_repo.get_by_id(object_id)
+        if not task:
+            log.warning(f"Task not found: {id}")
+            return
         log.info(f"Found task for report: {task.id}")
         log.info(
             f"Task ID: {task.id}, Status: {task.status}, Assigned To: {task.assigned_to}"
         )
-        mongo_db.close_connection()
+        await mongo_db.close_connection()
 
     log.info("Starting review_task_status")
     asyncio.run(run())

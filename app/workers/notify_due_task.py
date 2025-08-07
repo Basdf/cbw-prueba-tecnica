@@ -25,7 +25,7 @@ def notify_due_tasks() -> None:
         )
         for task in tasks:
             log.info(f"Notifying user about due task: {task.id}")
-        mongo_db.close_connection()
+        await mongo_db.close_connection()
 
     log.info("Starting task to notify due tasks")
     asyncio.run(run())

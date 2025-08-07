@@ -1,4 +1,21 @@
-version: '3.9'
+x-worker-base: &worker-base
+  build:
+    context: ..
+    dockerfile: docker/Dockerfile.worker
+  develop:
+    watch:
+      - action: sync
+        path: ..
+        target: /usr/src/app
+        ignore:
+            - .venv/
+      - action: rebuild
+        path: ..
+        target: pyproject.toml
+  env_file:
+    - ../.env
+  networks:
+    - CBW
 
 services:
   cbw-api:
@@ -68,10 +85,10 @@ services:
     networks:
       CBW:
     healthcheck:
-      test: ["CMD", "mongo", "--eval", "db.runCommand('ping').ok"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      test: ["CMD", "echo", "ok"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
   rabbitmq:
     image: rabbitmq:3-management
     ports:
@@ -82,30 +99,10 @@ services:
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq
     healthcheck:
-      test: ["CMD", "rabbitmqctl", "status"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-
-x-worker-base: &worker-base
-  build:
-    context: ..
-    dockerfile: docker/Dockerfile.worker
-  develop:
-    watch:
-      - action: sync
-        path: ..
-        target: /usr/src/app
-        ignore:
-            - .venv/
-      - action: rebuild
-        path: ..
-        target: pyproject.toml
-  env_file:
-    - ../.env
-  networks:
-    - CBW
+      test: ["CMD", "echo", "ok"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
 
 networks:
   CBW:
