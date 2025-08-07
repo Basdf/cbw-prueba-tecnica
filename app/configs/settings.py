@@ -12,4 +12,5 @@ class Settings(BaseSettings):
     CELERY_BROKER_URL: str = "amqp://guest:guest@rabbitmq:5672//"
     CELERY_RESULT_BACKEND: str = "rpc://guest:guest@rabbitmq:5672//"
 
+
 settings = Settings()

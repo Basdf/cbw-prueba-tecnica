@@ -24,7 +24,10 @@ async def lifespan(app: FastAPI):
     app.state.task_service = TaskService(
         TaskMongoRepository(mongo_db=mongo_db), TaskCeleryWorker()
     )
-    yield
+    try:
+        yield
+    finally:
+        mongo_db.close_connection()
 
 
 def create_app() -> FastAPI:

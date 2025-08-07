@@ -27,6 +27,7 @@ def review_task_status(id: str) -> None:
         log.info(
             f"Task ID: {task.id}, Status: {task.status}, Assigned To: {task.assigned_to}"
         )
+        mongo_db.close_connection()
 
     log.info("Starting review_task_status")
     asyncio.run(run())

@@ -70,7 +70,7 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile.worker
-    command: celery -A app.workers.notify_due_task worker -B -Q notify_queue --loglevel=info 
+    command: celery -A app.workers.notify_due_task worker -B -Q notify_queue --loglevel=info
     develop:
       watch:
         # Sync the working directory with the `/app` directory in the container

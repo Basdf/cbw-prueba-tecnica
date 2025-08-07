@@ -1,18 +1,17 @@
 import asyncio
 
 from app.adapters.repositories.mongo.task import TaskMongoRepository
-from app.adapters.repositories.workers.models.task import TaskReport
 from app.configs.celery import celery_app
 from app.configs.logging import get_logging
 from app.configs.mongo import MongoDBConfig
 from app.configs.settings import settings
-from app.domains.models.task import TaskFilterRequest
+from app.domains.models.task import TaskFilterRequest, TaskReportRequest
 
 log = get_logging(__name__)
 
 
 @celery_app.task(name="report", queue="report_queue", pydantic=True)
-def report(payload: TaskReport) -> None:
+def report(payload: TaskReportRequest) -> None:
     async def run():
         mongo_db = MongoDBConfig(uri=settings.MONGO_URI, db_name=settings.MONGO_DB_NAME)
         task_repo = TaskMongoRepository(mongo_db=mongo_db)
@@ -30,6 +29,7 @@ def report(payload: TaskReport) -> None:
             log.info(
                 f"Task ID: {task.id}, Status: {task.status}, Assigned To: {task.assigned_to}"
             )
+        mongo_db.close_connection()
 
     log.info("Starting report task")
     asyncio.run(run())

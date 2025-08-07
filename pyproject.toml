@@ -55,6 +55,7 @@ disable_error_code = "func-returns-value"
 namespace_packages = true
 ignore_missing_imports = true
 warn_unreachable = true
+plugins = ['pydantic.mypy']
 
 [[tool.mypy.overrides]]
 module = "whitelist"

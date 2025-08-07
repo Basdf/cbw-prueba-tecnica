@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from typing import TypeVar
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -9,13 +9,13 @@ T = TypeVar("T")
 
 
 class DateTimeRange(BaseModel):
-    model_config: ConfigDict = ConfigDict(validate_by_alias=True, validate_by_name=True)
+    model_config = ConfigDict(validate_by_alias=True, validate_by_name=True)
     start: datetime | None = Field(None, alias="$gte")
     end: datetime | None = Field(None, alias="$lte")
 
 
 class InListFilter[T](BaseModel):
-    model_config: ConfigDict = ConfigDict(validate_by_alias=True, validate_by_name=True)
+    model_config = ConfigDict(validate_by_name=True)
     values: list[T] | None = Field(None, alias="$in")
 
 
@@ -67,12 +67,16 @@ class TaskFilter(BaseModel):
         if due_date_init_date or due_date_end_date:
             self.due_date = DateTimeRange(
                 start=due_date_init_date,
-                end=due_date_end_date,
+                end=due_date_end_date + timedelta(days=1, seconds=-1)
+                if due_date_end_date
+                else None,
             )
         if created_at_init_date or created_at_end_date:
             self.created_at = DateTimeRange(
                 start=created_at_init_date,
-                end=created_at_end_date,
+                end=created_at_end_date + timedelta(days=1, seconds=-1)
+                if created_at_end_date
+                else None,
             )
 
     title: str | None = Field(None)

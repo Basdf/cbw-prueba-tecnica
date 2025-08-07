@@ -6,13 +6,13 @@ from pydantic_extra_types.mongo_object_id import MongoObjectId
 
 
 class DateTimeRange(BaseModel):
-    model_config: ConfigDict = ConfigDict(validate_by_alias=True, validate_by_name=True)
+    model_config = ConfigDict(validate_by_alias=True, validate_by_name=True)
     start: datetime | None = Field(None, alias="$gte")
     end: datetime | None = Field(None, alias="$lte")
 
 
 class TaskConfig(BaseModel):
-    model_config: ConfigDict = ConfigDict(validate_by_alias=True, validate_by_name=True)
+    model_config = ConfigDict(validate_by_alias=True, validate_by_name=True)
 
 
 class TaskStatus(str, Enum):
