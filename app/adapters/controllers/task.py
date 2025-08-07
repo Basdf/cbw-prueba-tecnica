@@ -27,6 +27,10 @@ def get_task_service(request: Request) -> TaskService:
     response_model=list[TaskResponse],
     status_code=200,
     response_model_by_alias=False,
+    responses={
+        404: {"description": "Tasks not found"},
+        500: {"description": "Database error"},
+    },
 )
 async def get_all(
     payload: TaskFilterRequest = Query(...),
@@ -40,6 +44,10 @@ async def get_all(
     response_model=TaskResponse,
     status_code=200,
     response_model_by_alias=False,
+    responses={
+        404: {"description": "Task not found"},
+        500: {"description": "Database error"},
+    },
 )
 async def get_by_id(
     id: MongoObjectId, task_service: TaskService = Depends(get_task_service)
@@ -52,6 +60,10 @@ async def get_by_id(
     response_model=list[TaskResponse],
     status_code=200,
     response_model_by_alias=False,
+    responses={
+        404: {"description": "No tasks found with that status"},
+        500: {"description": "Database error"},
+    },
 )
 async def get_by_status(
     status: TaskStatus, task_service: TaskService = Depends(get_task_service)
@@ -60,7 +72,13 @@ async def get_by_status(
 
 
 @router.post(
-    "", response_model=TaskResponse, status_code=201, response_model_by_alias=False
+    "",
+    response_model=TaskResponse,
+    status_code=201,
+    response_model_by_alias=False,
+    responses={
+        500: {"description": "Database error"},
+    },
 )
 async def create(
     new_task: CreateTaskRequest, task_service: TaskService = Depends(get_task_service)
@@ -69,7 +87,14 @@ async def create(
 
 
 @router.put(
-    "/{id}", response_model=TaskResponse, status_code=200, response_model_by_alias=False
+    "/{id}",
+    response_model=TaskResponse,
+    status_code=200,
+    response_model_by_alias=False,
+    responses={
+        404: {"description": "Task not found"},
+        500: {"description": "Database error"},
+    },
 )
 async def update(
     id: MongoObjectId,
@@ -80,7 +105,14 @@ async def update(
 
 
 @router.patch(
-    "/{id}", response_model=TaskResponse, status_code=200, response_model_by_alias=False
+    "/{id}",
+    response_model=TaskResponse,
+    status_code=200,
+    response_model_by_alias=False,
+    responses={
+        404: {"description": "Task not found"},
+        500: {"description": "Database error"},
+    },
 )
 async def patch(
     id: MongoObjectId,
@@ -90,7 +122,13 @@ async def patch(
     return await task_service.patch_task(id, patch_task)
 
 
-@router.delete("/{id}", status_code=204)
+@router.delete(
+    "/{id}",
+    status_code=204,
+    responses={
+        500: {"description": "Database error"},
+    },
+)
 async def delete(
     id: MongoObjectId, task_service: TaskService = Depends(get_task_service)
 ):
@@ -98,7 +136,14 @@ async def delete(
     return None
 
 
-@router.post("/report", response_model=AsyncTaskResponse, status_code=202)
+@router.post(
+    "/report",
+    response_model=AsyncTaskResponse,
+    status_code=202,
+    responses={
+        500: {"description": "Database error"},
+    },
+)
 async def report(
     task_report: TaskReportRequest,
     task_service: TaskService = Depends(get_task_service),
@@ -106,7 +151,15 @@ async def report(
     return task_service.report_task(task_report)
 
 
-@router.get("/review/{id}", response_model=AsyncTaskResponse, status_code=202)
+@router.get(
+    "/review/{id}",
+    response_model=AsyncTaskResponse,
+    status_code=202,
+    responses={
+        404: {"description": "Task not found"},
+        500: {"description": "Database error"},
+    },
+)
 async def review(
     id: MongoObjectId, task_service: TaskService = Depends(get_task_service)
 ):

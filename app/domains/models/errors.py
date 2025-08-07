@@ -6,3 +6,8 @@ class NotFoundError(Exception):
 class DatabaseError(Exception):
     def __init__(self, message: str = "Database error"):
         self.message = message
+
+
+class WorkerError(Exception):
+    def __init__(self, message: str = "Worker error"):
+        self.message = message

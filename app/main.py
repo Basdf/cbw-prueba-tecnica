@@ -8,7 +8,7 @@ from app.adapters.routes.api import api_router
 from app.configs.debugger import initialize_fastapi_server_debugger_if_needed
 from app.configs.logging import get_logging
 from app.configs.settings import settings
-from app.domains.models.errors import DatabaseError, NotFoundError
+from app.domains.models.errors import DatabaseError, NotFoundError, WorkerError
 
 log = get_logging(__name__)
 
@@ -56,13 +56,40 @@ def create_app() -> FastAPI:
 app = create_app()
 
 
-# Manejador dedicado para NotFoundError
 @app.exception_handler(NotFoundError)
 async def not_found_error_handler(request, exc: NotFoundError):
+    log.error(
+        f"NotFoundError: {exc.message}. Request data: method={request.method}, url={request.url}, headers={dict(request.headers)}"
+    )
+    try:
+        body = await request.body()
+        log.error(f"Request body: {body}")
+    except Exception as e:
+        log.error(f"Error reading request body: {e}")
     return JSONResponse(status_code=404, content={"detail": exc.message})
 
 
-# Manejador dedicado para DatabaseError
 @app.exception_handler(DatabaseError)
 async def database_error_handler(request, exc: DatabaseError):
+    log.error(
+        f"DatabaseError: {exc.message}. Request data: method={request.method}, url={request.url}, headers={dict(request.headers)}"
+    )
+    try:
+        body = await request.body()
+        log.error(f"Request body: {body}")
+    except Exception as e:
+        log.error(f"Error reading request body: {e}")
+    return JSONResponse(status_code=500, content={"detail": exc.message})
+
+
+@app.exception_handler(WorkerError)
+async def worker_error_handler(request, exc: WorkerError):
+    log.error(
+        f"WorkerError: {exc.message}. Request data: method={request.method}, url={request.url}, headers={dict(request.headers)}"
+    )
+    try:
+        body = await request.body()
+        log.error(f"Request body: {body}")
+    except Exception as e:
+        log.error(f"Error reading request body: {e}")
     return JSONResponse(status_code=500, content={"detail": exc.message})

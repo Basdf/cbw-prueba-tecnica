@@ -13,6 +13,7 @@ log = get_logging(__name__)
 @celery_app.task(name="report", queue="report_queue", pydantic=True)
 def report(payload: TaskReportRequest) -> None:
     async def run():
+        await asyncio.sleep(10)
         mongo_db = MongoDBConfig(uri=settings.MONGO_URI, db_name=settings.MONGO_DB_NAME)
         task_repo = TaskMongoRepository(mongo_db=mongo_db)
         tasks = await task_repo.get_all(
@@ -23,7 +24,6 @@ def report(payload: TaskReportRequest) -> None:
                 created_at_end_date=payload.end_date,
             )
         )
-        await asyncio.sleep(10)
         log.info(f"Found {len(tasks)} tasks for report")
         for task in tasks:
             log.info(
