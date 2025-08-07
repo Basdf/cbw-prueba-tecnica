@@ -6,7 +6,6 @@ from app.domains.models.task import (
     AsyncTaskResponse,
     CreateTaskRequest,
     PatchTaskRequest,
-    PutTaskRequest,
     TaskFilterRequest,
     TaskReportRequest,
     TaskResponse,
@@ -74,7 +73,7 @@ async def create(
 )
 async def update(
     id: MongoObjectId,
-    put_task: PutTaskRequest,
+    put_task: CreateTaskRequest,
     task_service: TaskService = Depends(get_task_service),
 ):
     return await task_service.update_task(id, put_task)

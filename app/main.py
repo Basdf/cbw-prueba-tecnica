@@ -2,11 +2,13 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from app.adapters.routes.api import api_router
 from app.configs.debugger import initialize_fastapi_server_debugger_if_needed
 from app.configs.logging import get_logging
 from app.configs.settings import settings
+from app.domains.models.errors import DatabaseError, NotFoundError
 
 log = get_logging(__name__)
 
@@ -52,3 +54,15 @@ def create_app() -> FastAPI:
 
 
 app = create_app()
+
+
+# Manejador dedicado para NotFoundError
+@app.exception_handler(NotFoundError)
+async def not_found_error_handler(request, exc: NotFoundError):
+    return JSONResponse(status_code=404, content={"detail": exc.message})
+
+
+# Manejador dedicado para DatabaseError
+@app.exception_handler(DatabaseError)
+async def database_error_handler(request, exc: DatabaseError):
+    return JSONResponse(status_code=500, content={"detail": exc.message})

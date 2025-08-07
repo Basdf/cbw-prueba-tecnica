@@ -6,7 +6,6 @@ from app.domains.models.task import (
     AsyncTaskResponse,
     CreateTaskRequest,
     PatchTaskRequest,
-    PutTaskRequest,
     TaskFilterRequest,
     TaskReportRequest,
     TaskResponse,
@@ -32,7 +31,9 @@ class TaskRepository(ABC):
         pass
 
     @abstractmethod
-    async def update(self, id: MongoObjectId, put_task: PutTaskRequest) -> TaskResponse:
+    async def update(
+        self, id: MongoObjectId, put_task: CreateTaskRequest
+    ) -> TaskResponse:
         pass
 
     @abstractmethod

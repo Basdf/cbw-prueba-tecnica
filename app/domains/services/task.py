@@ -5,7 +5,6 @@ from app.domains.models.task import (
     AsyncTaskResponse,
     CreateTaskRequest,
     PatchTaskRequest,
-    PutTaskRequest,
     TaskFilterRequest,
     TaskReportRequest,
     TaskResponse,
@@ -34,7 +33,7 @@ class TaskService:
         return await self.repository.create(new_task)
 
     async def update_task(
-        self, id: MongoObjectId, put_task: PutTaskRequest
+        self, id: MongoObjectId, put_task: CreateTaskRequest
     ) -> TaskResponse:
         return await self.repository.update(id, put_task)
 

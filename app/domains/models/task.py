@@ -41,14 +41,6 @@ class CreateTaskRequest(TaskConfig):
     due_date: date | None = Field(None)
 
 
-class PutTaskRequest(TaskConfig):
-    title: str = Field(...)
-    description: str = Field(...)
-    status: TaskStatus = Field(...)
-    assigned_to: str = Field(...)
-    due_date: date = Field(...)
-
-
 class PatchTaskRequest(TaskConfig):
     title: str | None = Field(None)
     description: str | None = Field(None)

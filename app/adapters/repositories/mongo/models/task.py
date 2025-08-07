@@ -29,15 +29,6 @@ class CreateTask(BaseModel):
     updated_at: datetime | None = Field(None)
 
 
-class PutTask(BaseModel):
-    title: str = Field(...)
-    description: str = Field(...)
-    status: TaskStatus = Field(...)
-    assigned_to: str = Field(...)
-    due_date: datetime = Field(...)
-    updated_at: datetime = Field(default_factory=datetime.now)
-
-
 class PatchTask(BaseModel):
     title: str | None = Field(None)
     description: str | None = Field(None)

@@ -1,18 +1,18 @@
 from pydantic_extra_types.mongo_object_id import MongoObjectId
 from pymongo.asynchronous.collection import AsyncCollection
+from pymongo.errors import PyMongoError
 
 from app.adapters.repositories.mongo.models.task import (
     CreateTask,
     PatchTask,
-    PutTask,
     TaskFilter,
 )
 from app.configs.logging import get_logging
 from app.configs.mongo import MongoDBConfig
+from app.domains.models.errors import DatabaseError, NotFoundError
 from app.domains.models.task import (
     CreateTaskRequest,
     PatchTaskRequest,
-    PutTaskRequest,
     TaskFilterRequest,
     TaskResponse,
     TaskStatus,
@@ -31,44 +31,78 @@ class TaskMongoRepository(TaskRepository):
         self.collection = self.mongo_db.get_collection("tasks")
 
     async def get_all(self, payload: TaskFilterRequest) -> list[TaskResponse]:
-        query = TaskFilter(**payload.model_dump())
-        cursor = self.collection.find(
-            query.model_dump(exclude_none=True, by_alias=True)
-        )
-        return [TaskResponse(**task) async for task in cursor]
+        try:
+            query = TaskFilter(**payload.model_dump())
+            cursor = self.collection.find(
+                query.model_dump(exclude_none=True, by_alias=True)
+            )
+            return [TaskResponse(**task) async for task in cursor]
+        except PyMongoError as e:
+            log.error(f"Error getting all tasks: {e}")
+            raise DatabaseError("Error getting all tasks")
 
     async def get_by_id(self, id: MongoObjectId) -> TaskResponse:
-        return TaskResponse(**await self.collection.find_one({"_id": id}))
+        try:
+            response = await self.collection.find_one({"_id": id})
+            if response is None:
+                raise NotFoundError(f"Task with id {id} not found")
+            return TaskResponse(**response)
+        except PyMongoError as e:
+            log.error(f"Error getting task by id {id}: {e}")
+            raise DatabaseError("Error getting task by id")
 
     async def get_by_status(self, status: TaskStatus) -> list[TaskResponse]:
-        cursor = self.collection.find({"status": status})
-        return [TaskResponse(**task) async for task in cursor]
+        try:
+            cursor = self.collection.find({"status": status})
+            return [TaskResponse(**task) async for task in cursor]
+        except PyMongoError as e:
+            log.error(f"Error getting tasks by status {status}: {e}")
+            raise DatabaseError("Error getting tasks by status")
 
     async def create(self, new_task: CreateTaskRequest) -> TaskResponse:
-        document = CreateTask(**new_task.model_dump())
-        task_insert_response = await self.collection.insert_one(
-            document.model_dump(by_alias=True)
-        )
-        return await self.get_by_id(task_insert_response.inserted_id)
+        try:
+            document = CreateTask(**new_task.model_dump())
+            task_insert_response = await self.collection.insert_one(
+                document.model_dump(by_alias=True)
+            )
+            return await self.get_by_id(task_insert_response.inserted_id)
+        except PyMongoError as e:
+            log.error(f"Error creating task: {e}")
+            raise DatabaseError("Error creating task")
 
-    async def update(self, id: MongoObjectId, put_task: PutTaskRequest) -> TaskResponse:
-        query = PutTask(**put_task.model_dump())
-        await self.collection.update_one(
-            {"_id": id},
-            {"$set": query.model_dump(by_alias=True)},
-        )
-        return await self.get_by_id(id)
+    async def update(
+        self, id: MongoObjectId, put_task: CreateTaskRequest
+    ) -> TaskResponse:
+        try:
+            query = CreateTask(**put_task.model_dump())
+            await self.collection.update_one(
+                {"_id": id}, {"$set": query.model_dump(by_alias=True)}, upsert=True
+            )
+            return await self.get_by_id(id)
+        except PyMongoError as e:
+            log.error(f"Error updating task {id}: {e}")
+            raise DatabaseError("Error updating task")
 
     async def patch(
         self, id: MongoObjectId, patch_task: PatchTaskRequest
     ) -> TaskResponse:
-        query = PatchTask(**patch_task.model_dump())
-        await self.collection.update_one(
-            {"_id": id},
-            {"$set": query.model_dump(exclude_none=True, by_alias=True)},
-        )
-        return await self.get_by_id(id)
+        try:
+            query = PatchTask(**patch_task.model_dump())
+            response = await self.collection.update_one(
+                {"_id": id},
+                {"$set": query.model_dump(exclude_none=True, by_alias=True)},
+            )
+            if response.modified_count == 0:
+                raise NotFoundError(f"Task with id {id} not found")
+            return await self.get_by_id(id)
+        except PyMongoError as e:
+            log.error(f"Error patching task {id}: {e}")
+            raise DatabaseError("Error patching task")
 
     async def delete(self, id: MongoObjectId) -> None:
-        await self.collection.delete_one({"_id": id})
-        return None
+        try:
+            await self.collection.delete_one({"_id": id})
+            return None
+        except PyMongoError as e:
+            log.error(f"Error deleting task {id}: {e}")
+            raise DatabaseError("Error deleting task")
