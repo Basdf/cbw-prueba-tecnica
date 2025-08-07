@@ -17,9 +17,9 @@ celery_app.conf.update(
     enable_utc=True,
 )
 celery_app.conf.beat_schedule = {
-    "notify-due-tasks-every-2-minutes": {
+    "notify-due-tasks-every-minute": {
         "task": "notify_due_tasks",  # nombre registrado de la tarea
-        "schedule": crontab(minute="*/2"),
+        "schedule": crontab(),
     },
 }
 celery_app.conf.timezone = "UTC"
