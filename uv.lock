@@ -108,45 +108,50 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "celery" },
-    { name = "fastapi" },
     { name = "httpx" },
     { name = "pydantic" },
     { name = "pydantic-extra-types" },
     { name = "pydantic-settings" },
-    { name = "pymongo" },
-    { name = "uvicorn", extra = ["standard"] },
 ]
 
 [package.dev-dependencies]
+api = [
+    { name = "fastapi" },
+    { name = "pymongo" },
+    { name = "uvicorn", extra = ["standard"] },
+]
 dev = [
     { name = "black" },
     { name = "debugpy" },
-    { name = "httpx" },
     { name = "locust" },
     { name = "pre-commit" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
     { name = "pytest-cov" },
     { name = "pytest-mock" },
+]
+worker = [
+    { name = "pydantic" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "celery" },
-    { name = "fastapi" },
     { name = "httpx" },
-    { name = "pydantic", extras = ["mongo"], specifier = ">=2.11.7" },
+    { name = "pydantic", specifier = ">=2.11.7" },
     { name = "pydantic-extra-types", specifier = ">=2.10.5" },
     { name = "pydantic-settings" },
-    { name = "pymongo" },
-    { name = "uvicorn", extras = ["standard"] },
 ]
 
 [package.metadata.requires-dev]
+api = [
+    { name = "fastapi" },
+    { name = "pymongo" },
+    { name = "uvicorn", extras = ["standard"] },
+]
 dev = [
     { name = "black" },
     { name = "debugpy" },
-    { name = "httpx" },
     { name = "locust" },
     { name = "pre-commit" },
     { name = "pytest" },
@@ -154,6 +159,7 @@ dev = [
     { name = "pytest-cov" },
     { name = "pytest-mock" },
 ]
+worker = [{ name = "pydantic" }]
 
 [[package]]
 name = "celery"

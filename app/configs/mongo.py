@@ -1,6 +1,6 @@
 from pymongo import AsyncMongoClient
 
-from app.config.config import settings
+from app.configs.settings import settings
 
 
 class MongoDBConfig:

@@ -77,3 +77,13 @@ class PatchTask(TaskConfig):
     assigned_to: str | None = Field(None)
     due_date: datetime | None = Field(None)
     updated_at: datetime = Field(default_factory=datetime.now)
+
+
+class TaskReportRequest(TaskConfig):
+    status: list[TaskStatus] | None = Field(None)
+    assigned_to: str | None = Field(None)
+    init_date: datetime = Field(...)
+    end_date: datetime = Field(...)
+
+
+class TaskReport(TaskReportRequest): ...

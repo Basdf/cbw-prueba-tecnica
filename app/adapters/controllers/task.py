@@ -1,19 +1,21 @@
 from fastapi import APIRouter
 from pydantic_extra_types.mongo_object_id import MongoObjectId
 
-from app.adapters.repositories.task import TaskMongoRepository
-from app.config.mongo import mongo_db
+from app.adapters.repositories.mongo.task import TaskMongoRepository
+from app.adapters.repositories.workers.task import TaskCeleryWorker
+from app.configs.mongo import mongo_db
 from app.domains.models.task import (
     CreateTaskRequest,
     PatchTaskRequest,
     PutTaskRequest,
+    TaskReportRequest,
     TaskResponse,
     TaskStatus,
 )
 from app.domains.services.task import TaskService
 
 router = APIRouter()
-task_service = TaskService(TaskMongoRepository(mongo_db=mongo_db))
+task_service = TaskService(TaskMongoRepository(mongo_db=mongo_db), TaskCeleryWorker())
 
 
 @router.get(
@@ -71,3 +73,13 @@ async def patch(id: MongoObjectId, patch_task: PatchTaskRequest):
 async def delete(id: MongoObjectId):
     await task_service.delete_task(id)
     return None
+
+
+@router.post("/report", response_model=str, status_code=202)
+async def report(task_report: TaskReportRequest):
+    return task_service.report_task(task_report)
+
+
+@router.get("/review/{id}", response_model=str, status_code=202)
+async def review(id: MongoObjectId):
+    return task_service.review_task_status(id)

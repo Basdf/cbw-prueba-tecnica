@@ -8,11 +8,11 @@ ENV UV_COMPILE_BYTECODE=1
 WORKDIR /usr/src/app
 
 # Copy dependencies
-COPY pyproject.toml uv.lock ./
+COPY pyproject.toml ./
 
 # Create virtual environment and install dependencies
 RUN apk add gcc python3-dev musl-dev linux-headers
-RUN uv venv .venv && uv --verbose sync
+RUN uv --verbose sync --group worker
 
 # --- Final Stage ---
 FROM python:3.13-alpine3.20 AS compile-image

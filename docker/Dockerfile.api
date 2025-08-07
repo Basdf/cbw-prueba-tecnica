@@ -1,0 +1,31 @@
+# --- Build Stage ---
+FROM ghcr.io/astral-sh/uv:python3.13-alpine AS builder
+
+# Set environment variables
+ENV UV_COMPILE_BYTECODE=1
+
+# Set working directory
+WORKDIR /usr/src/app
+
+# Copy dependencies
+COPY pyproject.toml ./
+
+# Create virtual environment and install dependencies
+RUN apk add gcc python3-dev musl-dev linux-headers
+RUN uv --verbose sync --group api
+
+# --- Final Stage ---
+FROM python:3.13-alpine3.20 AS compile-image
+
+# Set working directory
+WORKDIR /usr/src/app
+
+# Copy virtual environment from build stage
+COPY --from=builder /usr/src/app/.venv /usr/src/app/.venv
+
+# Copy the application code
+COPY . .
+
+# Set environment variables
+ENV PATH="/usr/src/app/.venv/bin:$PATH"
+EXPOSE 80

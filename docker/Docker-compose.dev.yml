@@ -3,7 +3,7 @@ services:
     image: cbw-api
     build:
       context: ..
-      dockerfile: docker/Dockerfile
+      dockerfile: docker/Dockerfile.api
     command: uvicorn app.main:app --workers 1 --host 0.0.0.0 --port 8001 --reload
     ports:
       - 8001:8001
@@ -16,10 +16,67 @@ services:
       - DEBUGGER=True
       - MONGO_URI=mongodb://cbw:cbw@cbw-mongo:27017
       - MONGO_DB_NAME=cbw_db
+      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
     networks:
       - CBW
     depends_on:
       - cbw-mongo
+  cbw-worker-beat:
+    image: cbw-worker-beat
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.worker
+    command: celery beat --loglevel=info
+    environment:
+      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
+      - CELERY_RESULT_BACKEND=rpc://guest:guest@rabbitmq:5672//
+    networks:
+      - CBW
+    depends_on:
+      - cbw-mongo
+      - rabbitmq
+  cbw-worker-report:
+    image: cbw-worker-report
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.worker
+    command: celery -A app.workers.report worker -Q report_queue --loglevel=info -c 1
+    environment:
+      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
+      - CELERY_RESULT_BACKEND=rpc://guest:guest@rabbitmq:5672//
+    networks:
+      - CBW
+    depends_on:
+      - cbw-mongo
+      - rabbitmq
+  cbw-worker-notify-due-tasks:
+    image: cbw-worker-notify-due-tasks
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.worker
+    command: celery -A app.workers.notify_due_task worker -Q notify_queue --loglevel=info -c 1
+    environment:
+      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
+      - CELERY_RESULT_BACKEND=rpc://guest:guest@rabbitmq:5672//
+    networks:
+      - CBW
+    depends_on:
+      - cbw-mongo
+      - rabbitmq
+  cbw-worker-review-task-status:
+    image: cbw-worker-review-task-status
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.worker
+    command: celery -A app.workers.review_task_status worker -Q review_queue --loglevel=info -c 1
+    environment:
+      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
+      - CELERY_RESULT_BACKEND=rpc://guest:guest@rabbitmq:5672//
+    networks:
+      - CBW
+    depends_on:
+      - cbw-mongo
+      - rabbitmq
   cbw-mongo:
     image: mongo:latest
     container_name: cbw-mongo
@@ -33,6 +90,14 @@ services:
       - cbw-mongo-data:/data/db
     networks:
       CBW:
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - 5672:5672
+      - 15672:15672
+    networks:
+      - CBW
+
 networks:
   CBW:
 

@@ -5,13 +5,9 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "fastapi",
     "celery",
-    "uvicorn[standard]",
     "httpx",
-    "pymongo",
     "pydantic-settings",
-    "pydantic[mongo]>=2.11.7",
     "pydantic-extra-types>=2.10.5",
 ]
 [dependency-groups]
@@ -24,14 +20,17 @@ dev = [
     "pytest-asyncio",
     "pytest-cov",
     "pytest-mock",
-    "httpx",
 ]
+api = ["fastapi", "uvicorn[standard]", "pymongo"]
+worker = ["pydantic"]
+
 [[tool.uv.index]]
 name = "pypi"
 url = "https://pypi.org/simple"
 [tool.ruff]
 exclude = ["whitelist.py"]
-
+[tool.uv]
+default-groups = "all"
 [tool.ruff.lint]
 extend-select = ["UP", "I"]
 exclude = ["UP027"]

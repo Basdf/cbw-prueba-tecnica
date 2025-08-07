@@ -1,4 +1,4 @@
-from app.config.config import settings
+from app.configs.settings import settings
 
 
 def initialize_fastapi_server_debugger_if_needed():

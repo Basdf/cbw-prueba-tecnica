@@ -1,7 +1,8 @@
+from pydantic_extra_types.mongo_object_id import MongoObjectId
 from pymongo.asynchronous.collection import AsyncCollection
 
-from app.config.logging import get_logging
-from app.config.mongo import MongoDBConfig
+from app.configs.logging import get_logging
+from app.configs.mongo import MongoDBConfig
 from app.domains.models.task import (
     CreateTask,
     PatchTask,
@@ -26,7 +27,7 @@ class TaskMongoRepository(TaskRepository):
         cursor = self.collection.find({})
         return [TaskResponse(**task) async for task in cursor]
 
-    async def get_by_id(self, id: str) -> TaskResponse:
+    async def get_by_id(self, id: MongoObjectId) -> TaskResponse:
         return await self.collection.find_one({"_id": id})
 
     async def get_by_status(self, status: TaskStatus) -> list[TaskResponse]:
@@ -37,7 +38,7 @@ class TaskMongoRepository(TaskRepository):
         task_insert_response = await self.collection.insert_one(new_task.model_dump())
         return await self.get_by_id(task_insert_response.inserted_id)
 
-    async def update(self, id: str, put_task: PutTask) -> TaskResponse:
+    async def update(self, id: MongoObjectId, put_task: PutTask) -> TaskResponse:
         put_task_json = put_task.model_dump()
         await self.collection.update_one(
             {"_id": id},
@@ -45,7 +46,7 @@ class TaskMongoRepository(TaskRepository):
         )
         return await self.get_by_id(id)
 
-    async def patch(self, id: str, patch_task: PatchTask) -> TaskResponse:
+    async def patch(self, id: MongoObjectId, patch_task: PatchTask) -> TaskResponse:
         patch_task_json = patch_task.model_dump(exclude_none=True)
         await self.collection.update_one(
             {"_id": id},
@@ -53,6 +54,6 @@ class TaskMongoRepository(TaskRepository):
         )
         return await self.get_by_id(id)
 
-    async def delete(self, id: str) -> None:
+    async def delete(self, id: MongoObjectId) -> None:
         await self.collection.delete_one({"_id": id})
         return None
