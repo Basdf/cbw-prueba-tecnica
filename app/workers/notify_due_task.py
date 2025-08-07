@@ -13,8 +13,6 @@ log = get_logging(__name__)
 
 @celery_app.task(name="notify_due_tasks", queue="notify_queue", pydantic=True)
 def notify_due_tasks() -> None:
-    log.info("Starting task to notify due tasks")
-
     async def run():
         mongo_db = MongoDBConfig(uri=settings.MONGO_URI, db_name=settings.MONGO_DB_NAME)
         task_repo = TaskMongoRepository(mongo_db=mongo_db)
@@ -28,5 +26,6 @@ def notify_due_tasks() -> None:
         for task in tasks:
             log.info(f"Notifying user about due task: {task.id}")
 
+    log.info("Starting task to notify due tasks")
     asyncio.run(run())
     log.info("Completed task to notify due tasks")
