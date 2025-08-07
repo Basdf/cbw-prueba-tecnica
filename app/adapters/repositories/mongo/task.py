@@ -1,13 +1,19 @@
 from pydantic_extra_types.mongo_object_id import MongoObjectId
 from pymongo.asynchronous.collection import AsyncCollection
 
-from app.configs.logging import get_logging
-from app.configs.mongo import MongoDBConfig
-from app.domains.models.task import (
+from app.adapters.repositories.mongo.models.task import (
     CreateTask,
     PatchTask,
     PutTask,
     TaskFilter,
+)
+from app.configs.logging import get_logging
+from app.configs.mongo import MongoDBConfig
+from app.domains.models.task import (
+    CreateTaskRequest,
+    PatchTaskRequest,
+    PutTaskRequest,
+    TaskFilterRequest,
     TaskResponse,
     TaskStatus,
 )
@@ -24,9 +30,10 @@ class TaskMongoRepository(TaskRepository):
         self.mongo_db = mongo_db
         self.collection = self.mongo_db.get_collection("tasks")
 
-    async def get_all(self, payload: TaskFilter) -> list[TaskResponse]:
+    async def get_all(self, payload: TaskFilterRequest) -> list[TaskResponse]:
+        query = TaskFilter(**payload.model_dump())
         cursor = self.collection.find(
-            payload.model_dump(exclude_none=True, by_alias=True)
+            query.model_dump(exclude_none=True, by_alias=True)
         )
         return [TaskResponse(**task) async for task in cursor]
 
@@ -37,23 +44,28 @@ class TaskMongoRepository(TaskRepository):
         cursor = self.collection.find({"status": status})
         return [TaskResponse(**task) async for task in cursor]
 
-    async def create(self, new_task: CreateTask) -> TaskResponse:
-        task_insert_response = await self.collection.insert_one(new_task.model_dump())
+    async def create(self, new_task: CreateTaskRequest) -> TaskResponse:
+        document = CreateTask(**new_task.model_dump())
+        task_insert_response = await self.collection.insert_one(
+            document.model_dump(by_alias=True)
+        )
         return await self.get_by_id(task_insert_response.inserted_id)
 
-    async def update(self, id: MongoObjectId, put_task: PutTask) -> TaskResponse:
-        put_task_json = put_task.model_dump()
+    async def update(self, id: MongoObjectId, put_task: PutTaskRequest) -> TaskResponse:
+        query = PutTask(**put_task.model_dump())
         await self.collection.update_one(
             {"_id": id},
-            {"$set": put_task_json},
+            {"$set": query.model_dump(by_alias=True)},
         )
         return await self.get_by_id(id)
 
-    async def patch(self, id: MongoObjectId, patch_task: PatchTask) -> TaskResponse:
-        patch_task_json = patch_task.model_dump(exclude_none=True)
+    async def patch(
+        self, id: MongoObjectId, patch_task: PatchTaskRequest
+    ) -> TaskResponse:
+        query = PatchTask(**patch_task.model_dump())
         await self.collection.update_one(
             {"_id": id},
-            {"$set": patch_task_json},
+            {"$set": query.model_dump(exclude_none=True, by_alias=True)},
         )
         return await self.get_by_id(id)
 

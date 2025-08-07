@@ -3,11 +3,11 @@ from abc import ABC, abstractmethod
 from pydantic_extra_types.mongo_object_id import MongoObjectId
 
 from app.domains.models.task import (
-    CreateTask,
-    PatchTask,
-    PutTask,
-    TaskFilter,
-    TaskReport,
+    CreateTaskRequest,
+    PatchTaskRequest,
+    PutTaskRequest,
+    TaskFilterRequest,
+    TaskReportRequest,
     TaskResponse,
     TaskStatus,
 )
@@ -15,7 +15,7 @@ from app.domains.models.task import (
 
 class TaskRepository(ABC):
     @abstractmethod
-    async def get_all(self, payload: TaskFilter) -> list[TaskResponse]:
+    async def get_all(self, payload: TaskFilterRequest) -> list[TaskResponse]:
         pass
 
     @abstractmethod
@@ -27,15 +27,15 @@ class TaskRepository(ABC):
         pass
 
     @abstractmethod
-    async def create(self, new_task: CreateTask) -> TaskResponse:
+    async def create(self, new_task: CreateTaskRequest) -> TaskResponse:
         pass
 
     @abstractmethod
-    async def update(self, id: MongoObjectId, put_task: PutTask) -> TaskResponse:
+    async def update(self, id: MongoObjectId, put_task: PutTaskRequest) -> TaskResponse:
         pass
 
     @abstractmethod
-    async def patch(self, id: MongoObjectId, patch_task: PatchTask) -> TaskResponse:
+    async def patch(self, id: MongoObjectId, patch_task: PatchTaskRequest) -> TaskResponse:
         pass
 
     @abstractmethod
@@ -45,7 +45,7 @@ class TaskRepository(ABC):
 
 class TaskWorker(ABC):
     @abstractmethod
-    def report(self, payload: TaskReport) -> str:
+    def report(self, payload: TaskReportRequest) -> str:
         pass
 
     @abstractmethod

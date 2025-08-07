@@ -1,6 +1,6 @@
+from app.adapters.repositories.workers.models.task import TaskReport
 from app.configs.celery import celery_app
 from app.configs.logging import get_logging
-from app.domains.models.task import TaskReport
 
 log = get_logging(__name__)
 

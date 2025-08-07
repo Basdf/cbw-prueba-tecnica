@@ -1,15 +1,10 @@
 from pydantic_extra_types.mongo_object_id import MongoObjectId
 
 from app.domains.models.task import (
-    CreateTask,
     CreateTaskRequest,
-    PatchTask,
     PatchTaskRequest,
-    PutTask,
     PutTaskRequest,
-    TaskFilter,
     TaskFilterRequest,
-    TaskReport,
     TaskReportRequest,
     TaskResponse,
     TaskStatus,
@@ -23,7 +18,7 @@ class TaskService:
         self.worker = worker
 
     async def get_all_tasks(self, payload: TaskFilterRequest) -> list[TaskResponse]:
-        return await self.repository.get_all(TaskFilter(**payload.model_dump()))
+        return await self.repository.get_all(payload)
 
     async def get_task_by_id(self, id: MongoObjectId) -> TaskResponse:
         return await self.repository.get_by_id(id)
@@ -32,23 +27,23 @@ class TaskService:
         return await self.repository.get_by_status(status)
 
     async def create_task(self, new_task: CreateTaskRequest) -> TaskResponse:
-        return await self.repository.create(CreateTask(**new_task.model_dump()))
+        return await self.repository.create(new_task)
 
     async def update_task(
         self, id: MongoObjectId, put_task: PutTaskRequest
     ) -> TaskResponse:
-        return await self.repository.update(id, PutTask(**put_task.model_dump()))
+        return await self.repository.update(id, put_task)
 
     async def patch_task(
         self, id: MongoObjectId, patch_task: PatchTaskRequest
     ) -> TaskResponse:
-        return await self.repository.patch(id, PatchTask(**patch_task.model_dump()))
+        return await self.repository.patch(id, patch_task)
 
     async def delete_task(self, id: MongoObjectId) -> None:
         await self.repository.delete(id)
 
     def report_task(self, payload: TaskReportRequest) -> str:
-        return self.worker.report(TaskReport(**payload.model_dump()))
+        return self.worker.report(payload)
 
     def review_task_status(self, id: MongoObjectId) -> str:
         return self.worker.review_task_status(id)
