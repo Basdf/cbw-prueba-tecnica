@@ -1,4 +1,3 @@
-
 # cbw-prueba-tecnica
 
 Prueba técnica para el puesto de Back-End Developer en CBW.
@@ -138,6 +137,9 @@ Consulta la documentación oficial de instalación de uv aquí: https://docs.ast
 
   Puedes consultar la documentación interactiva (Swagger UI) en:
   [http://localhost:8001/docs](http://localhost:8001/docs)
+
+  También puedes consultar la documentación generada por Scalar en:
+  [http://localhost:8001/scalar](http://localhost:8001/scalar)
 
    Si deseas levantar un servicio específico, puedes usar:
    ```sh

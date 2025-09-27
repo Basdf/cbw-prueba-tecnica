@@ -36,7 +36,7 @@ class TaskMongoRepository(TaskRepository):
             cursor = self.collection.find(
                 query.model_dump(exclude_none=True, by_alias=True)
             )
-            return [TaskResponse(**task) async for task in cursor]
+            return [TaskResponse(**task, id=task["_id"]) async for task in cursor]
         except PyMongoError as e:
             log.error(f"Error getting all tasks: {e}")
             raise DatabaseError("Error getting all tasks")
@@ -46,7 +46,7 @@ class TaskMongoRepository(TaskRepository):
             response = await self.collection.find_one({"_id": id})
             if response is None:
                 raise NotFoundError(f"Task with id {id} not found")
-            return TaskResponse(**response)
+            return TaskResponse(**response, id=response["_id"])
         except PyMongoError as e:
             log.error(f"Error getting task by id {id}: {e}")
             raise DatabaseError("Error getting task by id")
@@ -54,7 +54,7 @@ class TaskMongoRepository(TaskRepository):
     async def get_by_status(self, status: TaskStatus) -> list[TaskResponse]:
         try:
             cursor = self.collection.find({"status": status})
-            return [TaskResponse(**task) async for task in cursor]
+            return [TaskResponse(**task, id=task["_id"]) async for task in cursor]
         except PyMongoError as e:
             log.error(f"Error getting tasks by status {status}: {e}")
             raise DatabaseError("Error getting tasks by status")

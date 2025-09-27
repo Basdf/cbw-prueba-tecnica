@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from scalar_fastapi import get_scalar_api_reference
 
 from app.adapters.routes.api import api_router
 from app.configs.debugger import initialize_fastapi_server_debugger_if_needed
@@ -54,6 +55,14 @@ def create_app() -> FastAPI:
 
 
 app = create_app()
+
+
+@app.get("/scalar", include_in_schema=False)
+async def scalar_html():
+    return get_scalar_api_reference(
+        openapi_url=app.openapi_url,
+        title=app.title,
+    )
 
 
 @app.exception_handler(NotFoundError)

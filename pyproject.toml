@@ -9,6 +9,7 @@ dependencies = [
     "httpx",
     "pydantic-settings",
     "pydantic-extra-types>=2.10.5",
+    "scalar-fastapi>=1.4.3",
 ]
 [dependency-groups]
 dev = [
