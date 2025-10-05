@@ -125,7 +125,7 @@ Consulta la documentación oficial de instalación de uv aquí: https://docs.ast
 
 2. Levanta los servicios con Docker Compose:
    ```sh
-   docker compose -f docker/docker-compose.dev.yml up --build
+   docker compose -f docker/Docker-compose.dev.yml up --build
    ```
 
 
@@ -143,16 +143,16 @@ Consulta la documentación oficial de instalación de uv aquí: https://docs.ast
 
    Si deseas levantar un servicio específico, puedes usar:
    ```sh
-   docker compose -f docker/docker-compose.dev.yml up <servicio>
+   docker compose -f docker/Docker-compose.dev.yml up <servicio>
    ```
    Por ejemplo:
    ```sh
-   docker compose -f docker/docker-compose.dev.yml up cbw-api
-   docker compose -f docker/docker-compose.dev.yml up cbw-worker-report
-   docker compose -f docker/docker-compose.dev.yml up cbw-worker-notify-due-tasks
-   docker compose -f docker/docker-compose.dev.yml up cbw-worker-review-task-status
-   docker compose -f docker/docker-compose.dev.yml up cbw-mongo
-   docker compose -f docker/docker-compose.dev.yml up rabbitmq
+   docker compose -f docker/Docker-compose.dev.yml up cbw-api
+   docker compose -f docker/Docker-compose.dev.yml up cbw-worker-report
+   docker compose -f docker/Docker-compose.dev.yml up cbw-worker-notify-due-tasks
+   docker compose -f docker/Docker-compose.dev.yml up cbw-worker-review-task-status
+   docker compose -f docker/Docker-compose.dev.yml up cbw-mongo
+   docker compose -f docker/Docker-compose.dev.yml up rabbitmq
    ```
 
 4. Modo Debug (opcional):
